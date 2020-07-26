@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel='stylesheet' type='text/css' href='style.css'>
+        <link href="https://fonts.googleapis.com/css2?family=Varta:wght@300;600&display=swap" rel="stylesheet">
+        <title>JD's Shop</title>
+    </head>
+    <body>
+        <div class='wrapper'>
+            <div class='search-controls'>
+                <div>
+                    <p class='title'>Welcome!</p>
+                    <p class='description'>This is a website where I sell the random stuff I have that I no longer need. Search for an item in particular, or type 'catalog' or 'all' to see everything available. Happy shopping!</p>
+                </div>
+                <div class='direct-controls'>
+                    <h1>Search Our Shop!</h1>
+                    <input placeholder="Search for an item"/>
+                    <select id='specifity'>
+                        <option>All</option>
+                        <option>Relevant</option>
+                        <option>Most Relevant</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div class='search-result-container'></div>
+        <script>
+            let inputField = document.querySelector('input');
+            let specifityControls = document.querySelector('#specifity');
+            let specifity = 1.00;
+
+            function makeResult(textString) {
+                let array = textString.split(',');
+                array.forEach(item => {
+                    let formattedItem = item.split(':');
+                    let searchResult = document.createElement('div');
+                    searchResult.setAttribute('class', 'search-result-item');
+                    let name = document.createElement('p');
+                    let nameContent = document.createTextNode(`${formattedItem[0]}`);
+                    name.appendChild(nameContent);
+                    searchResult.appendChild(name);
+                    if (formattedItem[1] != undefined) {
+                        let price = document.createElement('p');
+                        let priceContent = document.createTextNode(`${formattedItem[1]}`);
+                        price.appendChild(priceContent);
+                        searchResult.appendChild(price);
+                    }
+                    document.querySelector('.search-result-container').insertBefore(searchResult, null);
+                });
+            }
+            
+            specifityControls.addEventListener('change', () => {
+                if (specifityControls.value === 'All') {
+                    specifity = 0.25;
+                } else if (specifityControls.value === 'Relevant') {
+                    specifity = 1.00;
+                } else {
+                    specifity = 1.25;
+                }
+                document.querySelector('.search-result-container').innerHTML = '';
+                fetch(`http://localhost:5000/search?q=${inputField.value}&specifity=${specifity}`)
+                .then(response => response.text())
+                .then(data => makeResult(data));
+            }, false);
+
+            inputField.addEventListener('keyup', () => {
+                if (event.keyCode === 13) {
+                    document.querySelector('.search-result-container').innerHTML = '';
+                    fetch(`http://localhost:5000/search?q=${inputField.value}&specifity=${specifity}`)
+                    .then(response => response.text())
+                    .then(data => makeResult(data));
+                }
+            }, false);
+        </script>
+    </body>
+</html>
